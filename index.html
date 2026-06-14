@@ -1,335 +1,565 @@
-<div className="overflow-x-auto w-full">
-        <svg viewBox={`0 0 ${width} ${height}`} className="w-full min-w-[600px] h-auto bg-slate-50/50 rounded-xl border border-slate-200">
-          {/* Grid and Y-Axis Labels */}
-          {yLabels.map((val, i) => (
-            <g key={i}>
-              <line 
-                x1={paddingX} y1={scaleY(val)} 
-                x2={width - paddingX} y2={scaleY(val)} 
-                stroke="#e2e8f0" strokeDasharray="4 4" 
-              />
-              <text x={paddingX - 5} y={scaleY(val) + 4} fontSize="10" fill="#64748b" textAnchor="end">
-                {val >= 1000000 ? `${(val/1000000).toFixed(0)}Jt` : val}
-              </text>
-            </g>
-          ))}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Nabung Emas</title>
+    
+    <!-- Tailwind CSS untuk Styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js untuk Grafik -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- FontAwesome untuk Ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-          {/* X-Axis Labels (First, Middle, Last) */}
-          <text x={scaleX(0)} y={height - 10} fontSize="10" fill="#64748b" textAnchor="middle">Bulan 1</text>
-          <text x={scaleX(Math.floor(data.length/2))} y={height - 10} fontSize="10" fill="#64748b" textAnchor="middle">Bulan {Math.floor(data.length/2) + 1}</text>
-          <text x={scaleX(data.length - 1)} y={height - 10} fontSize="10" fill="#64748b" textAnchor="middle">Bulan {data.length}</text>
+    <style>
+        /* Sembunyikan scrollbar untuk tampilan tabel yang lebih bersih */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans p-4 md:p-8 min-h-screen">
 
-          {/* Lines */}
-          <polyline points={costPoints} fill="none" stroke="#3b82f6" strokeWidth="3" className="drop-shadow-sm" />
-          <polyline points={valuePoints} fill="none" stroke="#10b981" strokeWidth="3" className="drop-shadow-sm" />
-        </svg>
+    <div class="max-w-6xl mx-auto space-y-6">
         
-        {/* Legend */}
-        <div className="flex justify-center gap-6 mt-4 text-sm font-medium">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-blue-500 rounded-sm"></div>
-            <span className="text-slate-600">Total Modal</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-emerald-500 rounded-sm"></div>
-            <span className="text-slate-600">Nilai Portofolio</span>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <div className="min-h-screen bg-slate-100 text-slate-800 font-sans p-4 md:p-8">
-      <div className="max-w-6xl mx-auto space-y-6">
-        
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 flex items-center justify-center gap-3">
-            <TrendingUp className="text-amber-500 w-8 h-8" />
-            Kalkulator Nabung Emas
-          </h1>
-          <p className="text-slate-600 max-w-2xl mx-auto">
-            Simulasikan potensi pertumbuhan investasi emas rutin Anda dengan skema harga majemuk.
-          </p>
+        <!-- Header -->
+        <div class="text-center space-y-2 mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900 flex items-center justify-center gap-3">
+                <i class="fa-solid fa-arrow-trend-up text-amber-500"></i>
+                Kalkulator Nabung Emas
+            </h1>
+            <p class="text-slate-600 max-w-2xl mx-auto text-sm md:text-base">
+                Simulasikan potensi pertumbuhan investasi emas rutin Anda dengan skema harga majemuk.
+            </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
-          {/* Input Panel */}
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Calculator className="w-5 h-5 text-indigo-500" />
-              Parameter Simulasi
-            </h2>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            {error && (
-              <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                {error}
-              </div>
-            )}
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Harga Emas Awal (Rp/gram)
-                </label>
-                <input 
-                  type="number" 
-                  value={initialPrice} 
-                  onChange={(e) => setInitialPrice(Number(e.target.value))}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Kenaikan Harga per Bulan (%)
-                </label>
-                <div className="relative">
-                  <input 
-                    type="number" step="0.01" 
-                    value={growthRate} 
-                    onChange={(e) => setGrowthRate(Number(e.target.value))}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all pr-10"
-                  />
-                  <span className="absolute right-3 top-2.5 text-slate-500">%</span>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Tabungan Rutin (Gram/bulan)
-                </label>
-                <div className="relative">
-                  <input 
-                    type="number" step="0.05"
-                    value={monthlyWeight} 
-                    onChange={(e) => setMonthlyWeight(Number(e.target.value))}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all pr-12"
-                  />
-                  <span className="absolute right-3 top-2.5 text-slate-500">gram</span>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Durasi Menabung
-                </label>
-                <div className="flex gap-2">
-                  <input 
-                    type="number" 
-                    value={duration} 
-                    onChange={(e) => setDuration(Number(e.target.value))}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all"
-                  />
-                  <select 
-                    value={durationType}
-                    onChange={(e) => setDurationType(e.target.value)}
-                    className="px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none"
-                  >
-                    <option value="years">Tahun</option>
-                    <option value="months">Bulan</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="pt-4 flex gap-3">
-                <button 
-                  onClick={handleCalculate}
-                  className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2.5 px-4 rounded-lg shadow-sm transition-colors flex justify-center items-center gap-2"
-                >
-                  Hitung Simulasi
-                </button>
-                <button 
-                  onClick={handleReset}
-                  className="bg-slate-200 hover:bg-slate-300 text-slate-700 p-2.5 rounded-lg transition-colors"
-                  title="Reset Form"
-                >
-                  <RotateCcw className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Results Panel */}
-          <div className="lg:col-span-2 space-y-6">
-            {!results ? (
-              <div className="bg-white p-12 rounded-2xl border border-slate-200 flex flex-col items-center justify-center text-slate-400 h-full min-h-[300px]">
-                <BarChart3 className="w-16 h-16 mb-4 opacity-50" />
-                <p>Masukkan parameter di samping dan klik "Hitung Simulasi"</p>
-              </div>
-            ) : (
-              <>
-                {/* Summary Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                    <p className="text-xs text-slate-500 font-medium uppercase mb-1">Total Emas</p>
-                    <p className="text-xl font-bold text-slate-800">{formatGram(results.summary.totalGold)}</p>
-                  </div>
-                  <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                    <p className="text-xs text-slate-500 font-medium uppercase mb-1">Total Modal</p>
-                    <p className="text-lg font-bold text-blue-600">{formatIDR(results.summary.totalCost)}</p>
-                  </div>
-                  <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                    <p className="text-xs text-slate-500 font-medium uppercase mb-1">Nilai Akhir</p>
-                    <p className="text-lg font-bold text-emerald-600">{formatIDR(results.summary.finalPortfolioValue)}</p>
-                  </div>
-                  <div className="bg-amber-50 p-4 rounded-xl border border-amber-200 shadow-sm">
-                    <p className="text-xs text-amber-700 font-medium uppercase mb-1">Keuntungan</p>
-                    <p className="text-lg font-bold text-amber-600">+{formatIDR(results.summary.profit)}</p>
-                  </div>
+            <!-- Panel Input (Kiri) -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
+                <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-calculator text-indigo-500"></i>
+                    Parameter Simulasi
+                </h2>
+                
+                <!-- Pesan Error -->
+                <div id="errorMessage" class="hidden bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4 items-center gap-2">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span id="errorText"></span>
                 </div>
 
-                {/* Actions */}
-                <div className="flex flex-wrap gap-3">
-                  <button 
-                    onClick={handleCopyResults}
-                    className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-sm font-medium shadow-sm"
-                  >
-                    {copySuccess ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-                    {copySuccess ? 'Tersalin!' : 'Salin Ringkasan'}
-                  </button>
-                  <button 
-                    onClick={handleSaveScenario}
-                    className="flex items-center gap-2 px-4 py-2 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors text-sm font-medium shadow-sm"
-                  >
-                    <Save className="w-4 h-4" />
-                    Simpan Skenario
-                  </button>
-                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">
+                            Harga Emas Awal (Rp/gram)
+                        </label>
+                        <input type="number" id="initialPrice" value="3136000" class="w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all">
+                    </div>
 
-                {/* Chart */}
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                  <h3 className="text-lg font-semibold mb-4 text-slate-800">Grafik Akumulasi Aset</h3>
-                  <Chart data={results.monthlyData} />
-                </div>
-              </>
-            )}
-          </div>
-        </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">
+                            Kenaikan Harga per Bulan (%)
+                        </label>
+                        <div class="relative">
+                            <input type="number" step="0.01" id="growthRate" value="1" class="w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none pr-10">
+                            <span class="absolute right-3 top-2.5 text-slate-500">%</span>
+                        </div>
+                    </div>
 
-        {/* Detailed Table */}
-        {results && (
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="p-6 border-b border-slate-200 flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-slate-800">Rincian per Bulan</h3>
-              <span className="text-sm bg-slate-100 text-slate-600 px-3 py-1 rounded-full">
-                {results.inputs.totalMonths} Bulan
-              </span>
-            </div>
-            <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
-              <table className="w-full text-left border-collapse">
-                <thead className="bg-slate-50 sticky top-0 shadow-sm z-10">
-                  <tr>
-                    <th className="p-4 text-sm font-semibold text-slate-600 whitespace-nowrap">Bulan</th>
-                    <th className="p-4 text-sm font-semibold text-slate-600 whitespace-nowrap">Harga/Gram</th>
-                    <th className="p-4 text-sm font-semibold text-slate-600 whitespace-nowrap">Biaya Beli (Modal)</th>
-                    <th className="p-4 text-sm font-semibold text-slate-600 whitespace-nowrap">Akumulasi Emas</th>
-                    <th className="p-4 text-sm font-semibold text-slate-600 whitespace-nowrap">Akumulasi Modal</th>
-                    <th className="p-4 text-sm font-semibold text-emerald-600 whitespace-nowrap">Nilai Portofolio</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {results.monthlyData.map((row) => (
-                    <tr key={row.month} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="p-4 text-sm text-slate-700">{row.month}</td>
-                      <td className="p-4 text-sm text-slate-700">{formatIDR(row.price)}</td>
-                      <td className="p-4 text-sm text-slate-700">{formatIDR(row.cost)}</td>
-                      <td className="p-4 text-sm text-amber-600 font-medium">{formatGram(row.cumulativeGold)}</td>
-                      <td className="p-4 text-sm text-blue-600">{formatIDR(row.cumulativeCost)}</td>
-                      <td className="p-4 text-sm text-emerald-600 font-semibold">{formatIDR(row.portfolioValue)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">
+                            Tabungan Rutin (Gram/bulan)
+                        </label>
+                        <div class="relative">
+                            <input type="number" step="0.05" id="monthlyWeight" value="1.25" class="w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none pr-12">
+                            <span class="absolute right-3 top-2.5 text-slate-500">gram</span>
+                        </div>
+                    </div>
 
-        {/* Scenario Comparison */}
-        {scenarios.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="p-6 border-b border-slate-200">
-              <h3 className="text-lg font-semibold text-slate-800">Perbandingan Skenario</h3>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead className="bg-slate-50">
-                  <tr>
-                    <th className="p-4 text-sm font-semibold text-slate-600">Skenario</th>
-                    <th className="p-4 text-sm font-semibold text-slate-600">Kenaikan (%)</th>
-                    <th className="p-4 text-sm font-semibold text-slate-600">Total Modal</th>
-                    <th className="p-4 text-sm font-semibold text-emerald-600">Nilai Akhir</th>
-                    <th className="p-4 text-sm font-semibold text-amber-600">Keuntungan</th>
-                    <th className="p-4 text-sm font-semibold text-slate-600">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {scenarios.map((scenario, idx) => (
-                    <tr key={scenario.id} className="hover:bg-slate-50">
-                      <td className="p-4 text-sm text-slate-700 font-medium">Skenario {idx + 1} ({scenario.inputs.totalMonths} bln)</td>
-                      <td className="p-4 text-sm text-slate-700">{scenario.inputs.growthRate}%</td>
-                      <td className="p-4 text-sm text-slate-700">{formatIDR(scenario.summary.totalCost)}</td>
-                      <td className="p-4 text-sm text-emerald-600 font-semibold">{formatIDR(scenario.summary.finalPortfolioValue)}</td>
-                      <td className="p-4 text-sm text-amber-600 font-semibold">+{formatIDR(scenario.summary.profit)}</td>
-                      <td className="p-4 text-sm text-slate-700">
-                        <button 
-                          onClick={() => handleRemoveScenario(scenario.id)}
-                          className="text-red-500 hover:text-red-700 text-xs font-medium bg-red-50 px-2 py-1 rounded"
-                        >
-                          Hapus
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">
+                            Durasi Menabung
+                        </label>
+                        <div class="flex gap-2">
+                            <input type="number" id="duration" value="4" class="w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none">
+                            <select id="durationType" class="px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none">
+                                <option value="years">Tahun</option>
+                                <option value="months">Bulan</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 flex gap-3">
+                        <button onclick="calculate()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2.5 px-4 rounded-lg shadow-sm transition-colors flex justify-center items-center gap-2">
+                            Hitung Simulasi
                         </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        <button onclick="resetForm()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 p-2.5 rounded-lg transition-colors" title="Reset Form">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
-          </div>
-        )}
 
-        {/* Formula Explanation Accordion */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <button 
-            onClick={() => setShowFormulas(!showFormulas)}
-            className="w-full p-6 flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition-colors"
-          >
-            <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
-              <Info className="w-5 h-5 text-blue-500" />
-              Penjelasan Rumus Perhitungan
-            </h3>
-            {showFormulas ? <ChevronUp className="w-5 h-5 text-slate-500" /> : <ChevronDown className="w-5 h-5 text-slate-500" />}
-          </button>
-          
-          {showFormulas && (
-            <div className="p-6 border-t border-slate-200 text-slate-600 space-y-4 text-sm leading-relaxed">
-              <p>Aplikasi ini menggunakan matematika dasar untuk pertumbuhan eksponensial (bunga majemuk):</p>
-              <ul className="list-disc pl-5 space-y-2">
-                <li>
-                  <strong>Harga Bulan ke-n:</strong> <code className="bg-slate-100 px-1 py-0.5 rounded text-amber-700">Harga Awal × (1 + Persentase/100)^(n-1)</code><br/>
-                  Kenaikan harga diterapkan dari harga bulan sebelumnya secara berjenjang.
-                </li>
-                <li>
-                  <strong>Total Emas:</strong> <code className="bg-slate-100 px-1 py-0.5 rounded text-amber-700">Tabungan Rutin × Jumlah Bulan</code>
-                </li>
-                <li>
-                  <strong>Total Modal (Biaya Beli):</strong> Menjumlahkan seluruh hasil perkalian (Tabungan Rutin × Harga pada bulan tersebut) dari bulan ke-1 hingga bulan terakhir.
-                </li>
-                <li>
-                  <strong>Nilai Akhir Portofolio:</strong> <code className="bg-slate-100 px-1 py-0.5 rounded text-amber-700">Total Emas × Harga Bulan Terakhir</code><br/>
-                  Estimasi nilai jika seluruh emas dijual pada bulan terakhir menabung.
-                </li>
-                <li>
-                  <strong>Keuntungan:</strong> <code className="bg-slate-100 px-1 py-0.5 rounded text-amber-700">Nilai Akhir Portofolio - Total Modal</code>
-                </li>
-              </ul>
+            <!-- Panel Hasil (Kanan) -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- State Kosong / Belum Hitung -->
+                <div id="emptyState" class="bg-white p-12 rounded-2xl border border-slate-200 flex flex-col items-center justify-center text-slate-400 h-full min-h-[300px]">
+                    <i class="fa-solid fa-chart-simple text-6xl mb-4 opacity-30"></i>
+                    <p>Masukkan parameter di samping dan klik "Hitung Simulasi"</p>
+                </div>
+
+                <!-- Kontainer Hasil (Disembunyikan di awal) -->
+                <div id="resultContainer" class="hidden space-y-6">
+                    
+                    <!-- Kartu Ringkasan -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                            <p class="text-xs text-slate-500 font-medium uppercase mb-1">Total Emas</p>
+                            <p id="resTotalGold" class="text-xl font-bold text-slate-800">0 gr</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                            <p class="text-xs text-slate-500 font-medium uppercase mb-1">Total Modal</p>
+                            <p id="resTotalCost" class="text-lg font-bold text-blue-600">Rp 0</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                            <p class="text-xs text-slate-500 font-medium uppercase mb-1">Nilai Akhir</p>
+                            <p id="resPortfolio" class="text-lg font-bold text-emerald-600">Rp 0</p>
+                        </div>
+                        <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 shadow-sm">
+                            <p class="text-xs text-amber-700 font-medium uppercase mb-1">Keuntungan</p>
+                            <p id="resProfit" class="text-lg font-bold text-amber-600">+Rp 0</p>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Aksi -->
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="copyResults()" class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-sm font-medium shadow-sm">
+                            <i id="copyIcon" class="fa-regular fa-copy"></i>
+                            <span id="copyText">Salin Ringkasan</span>
+                        </button>
+                        <button onclick="saveScenario()" class="flex items-center gap-2 px-4 py-2 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors text-sm font-medium shadow-sm">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Simpan Skenario
+                        </button>
+                    </div>
+
+                    <!-- Grafik -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="text-lg font-semibold mb-4 text-slate-800">Grafik Akumulasi Aset</h3>
+                        <!-- PERBAIKAN GRAFIK DI SINI: relative dan min-height/height statis -->
+                        <div class="relative w-full h-[300px] md:h-[400px]">
+                            <canvas id="growthChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Tabel Rincian -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="p-6 border-b border-slate-200 flex justify-between items-center">
+                            <h3 class="text-lg font-semibold text-slate-800">Rincian per Bulan</h3>
+                            <span id="resMonthsLabel" class="text-sm bg-slate-100 text-slate-600 px-3 py-1 rounded-full">0 Bulan</span>
+                        </div>
+                        <div class="overflow-x-auto max-h-[500px] overflow-y-auto no-scrollbar">
+                            <table class="w-full text-left border-collapse min-w-[700px]">
+                                <thead class="bg-slate-50 sticky top-0 shadow-sm z-10">
+                                    <tr>
+                                        <th class="p-4 text-sm font-semibold text-slate-600">Bln</th>
+                                        <th class="p-4 text-sm font-semibold text-slate-600">Harga/Gram</th>
+                                        <th class="p-4 text-sm font-semibold text-slate-600">Biaya Beli (Modal)</th>
+                                        <th class="p-4 text-sm font-semibold text-amber-600">Akumulasi Emas</th>
+                                        <th class="p-4 text-sm font-semibold text-blue-600">Total Modal</th>
+                                        <th class="p-4 text-sm font-semibold text-emerald-600">Nilai Portofolio</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBody" class="divide-y divide-slate-100">
+                                    <!-- Baris tabel akan diisi oleh JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
-          )}
         </div>
 
-      </div>
+        <!-- Perbandingan Skenario -->
+        <div id="scenarioContainer" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-6 border-b border-slate-200">
+                <h3 class="text-lg font-semibold text-slate-800">Perbandingan Skenario</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[600px]">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="p-4 text-sm font-semibold text-slate-600">Skenario</th>
+                            <th class="p-4 text-sm font-semibold text-slate-600">Kenaikan (%)</th>
+                            <th class="p-4 text-sm font-semibold text-slate-600">Total Modal</th>
+                            <th class="p-4 text-sm font-semibold text-emerald-600">Nilai Akhir</th>
+                            <th class="p-4 text-sm font-semibold text-amber-600">Keuntungan</th>
+                            <th class="p-4 text-sm font-semibold text-slate-600">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scenarioBody" class="divide-y divide-slate-100">
+                        <!-- Skenario akan diisi oleh JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Penjelasan Rumus (Accordion) -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <button onclick="toggleFormula()" class="w-full p-6 flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition-colors">
+                <h3 class="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info text-blue-500"></i>
+                    Penjelasan Rumus Perhitungan
+                </h3>
+                <i id="formulaIcon" class="fa-solid fa-chevron-down text-slate-500"></i>
+            </button>
+            
+            <div id="formulaContent" class="hidden p-6 border-t border-slate-200 text-slate-600 space-y-4 text-sm leading-relaxed">
+                <p>Aplikasi ini menggunakan matematika dasar untuk pertumbuhan eksponensial (bunga majemuk):</p>
+                <ul class="list-disc pl-5 space-y-2">
+                    <li>
+                        <strong>Harga Bulan ke-n:</strong> <code class="bg-slate-100 px-1 py-0.5 rounded text-amber-700">Harga Awal × (1 + Persentase/100)<sup>(n-1)</sup></code><br/>
+                        Kenaikan harga diterapkan dari harga bulan sebelumnya secara berjenjang.
+                    </li>
+                    <li>
+                        <strong>Total Emas:</strong> <code class="bg-slate-100 px-1 py-0.5 rounded text-amber-700">Tabungan Rutin × Jumlah Bulan</code>
+                    </li>
+                    <li>
+                        <strong>Total Modal (Biaya Beli):</strong> Menjumlahkan seluruh hasil perkalian (Tabungan Rutin × Harga pada bulan tersebut) dari bulan ke-1 hingga bulan terakhir.
+                    </li>
+                    <li>
+                        <strong>Nilai Akhir Portofolio:</strong> <code class="bg-slate-100 px-1 py-0.5 rounded text-amber-700">Total Emas × Harga Bulan Terakhir</code><br/>
+                        Estimasi nilai jika seluruh emas dijual pada bulan terakhir menabung.
+                    </li>
+                    <li>
+                        <strong>Keuntungan:</strong> <code class="bg-slate-100 px-1 py-0.5 rounded text-amber-700">Nilai Akhir Portofolio - Total Modal</code>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
     </div>
-  );
-}
+
+    <!-- Script Logika Perhitungan -->
+    <script>
+        // Global Variables
+        let myChart = null;
+        let currentResult = null;
+        let scenarios = [];
+
+        // Format Rupiah
+        const formatIDR = (value) => {
+            return new Intl.NumberFormat('id-ID', { 
+                style: 'currency', 
+                currency: 'IDR', 
+                minimumFractionDigits: 0, 
+                maximumFractionDigits: 0 
+            }).format(value);
+        };
+        
+        // Format Gram
+        const formatGram = (value) => {
+            return new Intl.NumberFormat('id-ID', { 
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 4 
+            }).format(value) + ' gr';
+        };
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            document.getElementById('errorText').innerText = message;
+            errorDiv.classList.remove('hidden');
+            errorDiv.classList.add('flex');
+        }
+
+        function hideError() {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.classList.add('hidden');
+            errorDiv.classList.remove('flex');
+        }
+
+        function calculate() {
+            hideError();
+
+            // Ambil Nilai Input
+            const initialPrice = parseFloat(document.getElementById('initialPrice').value);
+            const growthRate = parseFloat(document.getElementById('growthRate').value);
+            const monthlyWeight = parseFloat(document.getElementById('monthlyWeight').value);
+            const duration = parseFloat(document.getElementById('duration').value);
+            const durationType = document.getElementById('durationType').value;
+
+            // Validasi Input
+            if (isNaN(initialPrice) || initialPrice <= 0) return showError('Harga awal harus lebih besar dari 0.');
+            if (isNaN(growthRate) || growthRate < 0) return showError('Kenaikan per bulan tidak boleh negatif.');
+            if (isNaN(monthlyWeight) || monthlyWeight <= 0) return showError('Tabungan rutin harus lebih besar dari 0.');
+            if (isNaN(duration) || duration <= 0) return showError('Durasi harus lebih besar dari 0.');
+
+            // Hitung Bulan
+            const totalMonths = durationType === 'years' ? duration * 12 : duration;
+
+            let totalGold = 0;
+            let totalCost = 0;
+            const monthlyData = [];
+
+            // Proses Perulangan
+            for (let i = 1; i <= totalMonths; i++) {
+                // Rumus: x * (1 + y/100)^(n-1)
+                const priceN = initialPrice * Math.pow(1 + growthRate / 100, i - 1);
+                const costN = monthlyWeight * priceN;
+                
+                totalGold += monthlyWeight;
+                totalCost += costN;
+                const portfolioValue = totalGold * priceN;
+
+                monthlyData.push({
+                    month: i,
+                    price: priceN,
+                    cost: costN,
+                    cumulativeGold: totalGold,
+                    cumulativeCost: totalCost,
+                    portfolioValue: portfolioValue
+                });
+            }
+
+            const finalPrice = monthlyData[totalMonths - 1].price;
+            const finalPortfolioValue = totalGold * finalPrice;
+            const profit = finalPortfolioValue - totalCost;
+
+            // Simpan Hasil ke Global Variable
+            currentResult = {
+                inputs: { initialPrice, growthRate, monthlyWeight, totalMonths },
+                summary: { totalGold, totalCost, finalPortfolioValue, profit, finalPrice },
+                monthlyData: monthlyData
+            };
+
+            updateUI();
+        }
+
+        function updateUI() {
+            // Sembunyikan Empty State, Tampilkan Hasil
+            document.getElementById('emptyState').classList.add('hidden');
+            document.getElementById('resultContainer').classList.remove('hidden');
+
+            // Update Kartu Ringkasan
+            document.getElementById('resTotalGold').innerText = formatGram(currentResult.summary.totalGold);
+            document.getElementById('resTotalCost').innerText = formatIDR(currentResult.summary.totalCost);
+            document.getElementById('resPortfolio').innerText = formatIDR(currentResult.summary.finalPortfolioValue);
+            document.getElementById('resProfit').innerText = '+' + formatIDR(currentResult.summary.profit);
+            document.getElementById('resMonthsLabel').innerText = currentResult.inputs.totalMonths + ' Bulan';
+
+            // Update Tabel
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = ''; // Kosongkan tabel
+            
+            currentResult.monthlyData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50/50 transition-colors';
+                tr.innerHTML = `
+                    <td class="p-4 text-sm text-slate-700">${row.month}</td>
+                    <td class="p-4 text-sm text-slate-700">${formatIDR(row.price)}</td>
+                    <td class="p-4 text-sm text-slate-700">${formatIDR(row.cost)}</td>
+                    <td class="p-4 text-sm text-amber-600 font-medium">${formatGram(row.cumulativeGold)}</td>
+                    <td class="p-4 text-sm text-blue-600">${formatIDR(row.cumulativeCost)}</td>
+                    <td class="p-4 text-sm text-emerald-600 font-semibold">${formatIDR(row.portfolioValue)}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            // Update Grafik (Chart.js)
+            renderChart();
+        }
+
+        function renderChart() {
+            const ctx = document.getElementById('growthChart').getContext('2d');
+            
+            // Hancurkan grafik lama jika ada supaya tidak menumpuk
+            if (myChart) {
+                myChart.destroy();
+            }
+
+            const labels = currentResult.monthlyData.map(d => 'Bulan ' + d.month);
+            const costData = currentResult.monthlyData.map(d => d.cumulativeCost);
+            const portfolioData = currentResult.monthlyData.map(d => d.portfolioValue);
+
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Total Modal Dikeluarkan',
+                            data: costData,
+                            borderColor: '#3b82f6', // Biru
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 0,
+                            pointHoverRadius: 6
+                        },
+                        {
+                            label: 'Nilai Portofolio (Aset)',
+                            data: portfolioData,
+                            borderColor: '#10b981', // Hijau
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            pointRadius: 0,
+                            pointHoverRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, /* INI ADALAH KUNCI PERBAIKAN UNTUK MOBILE */
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + formatIDR(context.parsed.y);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    if(value >= 1000000) return (value / 1000000) + ' Jt';
+                                    return value;
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                maxTicksLimit: 12 // Maksimal label di sumbu X
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function resetForm() {
+            document.getElementById('initialPrice').value = 3136000;
+            document.getElementById('growthRate').value = 1;
+            document.getElementById('monthlyWeight').value = 1.25;
+            document.getElementById('duration').value = 4;
+            document.getElementById('durationType').value = 'years';
+            
+            document.getElementById('emptyState').classList.remove('hidden');
+            document.getElementById('resultContainer').classList.add('hidden');
+            hideError();
+            currentResult = null;
+        }
+
+        function copyResults() {
+            if (!currentResult) return;
+            
+            const text = `
+Simulasi Tabungan Emas Rutin
+-----------------------------------
+Asumsi:
+- Harga Awal: ${formatIDR(currentResult.inputs.initialPrice)}/gr
+- Kenaikan Harga: ${currentResult.inputs.growthRate}% per bulan
+- Tabungan Rutin: ${formatGram(currentResult.inputs.monthlyWeight)}/bulan
+- Durasi: ${currentResult.inputs.totalMonths} bulan
+
+Hasil Akhir:
+- Total Emas Terkumpul: ${formatGram(currentResult.summary.totalGold)}
+- Total Modal Dikeluarkan: ${formatIDR(currentResult.summary.totalCost)}
+- Estimasi Nilai Portofolio: ${formatIDR(currentResult.summary.finalPortfolioValue)}
+- Estimasi Keuntungan: ${formatIDR(currentResult.summary.profit)}
+            `.trim();
+
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            
+            // Ubah UI tombol sementara
+            const copyIcon = document.getElementById('copyIcon');
+            const copyText = document.getElementById('copyText');
+            
+            copyIcon.className = "fa-solid fa-check text-emerald-500";
+            copyText.innerText = "Tersalin!";
+            
+            setTimeout(() => {
+                copyIcon.className = "fa-regular fa-copy";
+                copyText.innerText = "Salin Ringkasan";
+            }, 3000);
+        }
+
+        function saveScenario() {
+            if (!currentResult) return;
+            
+            const newScenario = {
+                id: Date.now(),
+                ...currentResult
+            };
+            scenarios.push(newScenario);
+            renderScenarios();
+        }
+
+        function removeScenario(id) {
+            scenarios = scenarios.filter(s => s.id !== id);
+            renderScenarios();
+        }
+
+        function renderScenarios() {
+            const container = document.getElementById('scenarioContainer');
+            const tbody = document.getElementById('scenarioBody');
+            
+            if (scenarios.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+            
+            container.classList.remove('hidden');
+            tbody.innerHTML = '';
+            
+            scenarios.forEach((s, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50';
+                tr.innerHTML = `
+                    <td class="p-4 text-sm text-slate-700 font-medium">Skenario ${idx + 1} (${s.inputs.totalMonths} bln)</td>
+                    <td class="p-4 text-sm text-slate-700">${s.inputs.growthRate}%</td>
+                    <td class="p-4 text-sm text-slate-700">${formatIDR(s.summary.totalCost)}</td>
+                    <td class="p-4 text-sm text-emerald-600 font-semibold">${formatIDR(s.summary.finalPortfolioValue)}</td>
+                    <td class="p-4 text-sm text-amber-600 font-semibold">+${formatIDR(s.summary.profit)}</td>
+                    <td class="p-4 text-sm text-slate-700">
+                        <button onclick="removeScenario(${s.id})" class="text-red-500 hover:text-red-700 text-xs font-medium bg-red-50 px-2 py-1 rounded">
+                            Hapus
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function toggleFormula() {
+            const content = document.getElementById('formulaContent');
+            const icon = document.getElementById('formulaIcon');
+            
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.className = "fa-solid fa-chevron-up text-slate-500";
+            } else {
+                content.classList.add('hidden');
+                icon.className = "fa-solid fa-chevron-down text-slate-500";
+            }
+        }
+    </script>
+</body>
+</html>
